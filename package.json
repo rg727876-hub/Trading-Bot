@@ -1,0 +1,46 @@
+{
+  "name": "trading-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Experimental algorithmic trading platform for backtesting and paper trading only.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "decimal.js": "^10.5.0",
+    "dotenv": "^16.5.0",
+    "fastify": "^5.3.2",
+    "pino": "^9.7.0",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@types/node": "^22.15.21",
+    "@vitest/coverage-v8": "^3.1.4",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "globals": "^16.1.0",
+    "prettier": "^3.5.3",
+    "prisma": "^6.7.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.0",
+    "vitest": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
