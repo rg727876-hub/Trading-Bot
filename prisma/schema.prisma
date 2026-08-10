@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TradeSide {
+  BUY
+  SELL
+}
+
+enum TradeStatus {
+  OPEN
+  CLOSED
+  REJECTED
+}
+
+enum PositionStatus {
+  OPEN
+  CLOSED
+}
+
+enum BotEventType {
+  BOT_STARTED
+  BOT_STOPPED
+  BOT_PAUSED
+  MARKET_DATA_RECEIVED
+  SIGNAL_GENERATED
+  TRADE_OPENED
+  TRADE_CLOSED
+  STOP_LOSS_TRIGGERED
+  TAKE_PROFIT_TRIGGERED
+  BACKTEST_STARTED
+  BACKTEST_COMPLETED
+  ERROR
+}
+
+model MarketData {
+  id        String   @id @default(cuid())
+  symbol    String
+  timeframe String
+  timestamp DateTime
+  open      Decimal  @db.Decimal(30, 10)
+  high      Decimal  @db.Decimal(30, 10)
+  low       Decimal  @db.Decimal(30, 10)
+  close     Decimal  @db.Decimal(30, 10)
+  volume    Decimal  @db.Decimal(30, 10)
+  createdAt DateTime @default(now())
+
+  @@unique([symbol, timeframe, timestamp])
+  @@index([symbol, timeframe, timestamp])
+}
+
+model Strategy {
+  id            String           @id @default(cuid())
+  name          String
+  description   String?
+  version       String
+  enabled       Boolean          @default(false)
+  configuration Json
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  trades        Trade[]
+  backtests     BacktestResult[]
+
+  @@unique([name, version])
+}
+
+model Trade {
+  id         String      @id @default(cuid())
+  symbol     String
+  side       TradeSide
+  quantity   Decimal     @db.Decimal(30, 10)
+  entryPrice Decimal     @db.Decimal(30, 10)
+  exitPrice  Decimal?    @db.Decimal(30, 10)
+  stopLoss   Decimal?    @db.Decimal(30, 10)
+  takeProfit Decimal?    @db.Decimal(30, 10)
+  fees       Decimal     @default(0) @db.Decimal(30, 10)
+  profitLoss Decimal?    @db.Decimal(30, 10)
+  entryTime  DateTime
+  exitTime   DateTime?
+  exitReason String?
+  strategyId String
+  status     TradeStatus @default(OPEN)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  strategy   Strategy    @relation(fields: [strategyId], references: [id], onDelete: Restrict)
+
+  @@index([symbol, status])
+  @@index([strategyId, entryTime])
+}
+
+model Position {
+  id            String         @id @default(cuid())
+  symbol        String
+  side          TradeSide
+  quantity      Decimal        @db.Decimal(30, 10)
+  entryPrice    Decimal        @db.Decimal(30, 10)
+  stopLoss      Decimal?       @db.Decimal(30, 10)
+  takeProfit    Decimal?       @db.Decimal(30, 10)
+  unrealizedPnl Decimal        @default(0) @db.Decimal(30, 10)
+  openedAt      DateTime
+  updatedAt     DateTime       @updatedAt
+  status        PositionStatus @default(OPEN)
+
+  @@index([symbol, status])
+}
+
+model BalanceHistory {
+  id            String   @id @default(cuid())
+  balance       Decimal  @db.Decimal(30, 10)
+  equity        Decimal  @db.Decimal(30, 10)
+  realizedPnl   Decimal  @default(0) @db.Decimal(30, 10)
+  unrealizedPnl Decimal  @default(0) @db.Decimal(30, 10)
+  timestamp     DateTime
+  createdAt     DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model BacktestResult {
+  id             String   @id @default(cuid())
+  strategyId     String
+  symbol         String
+  timeframe      String
+  startDate      DateTime
+  endDate        DateTime
+  initialBalance Decimal  @db.Decimal(30, 10)
+  finalBalance   Decimal  @db.Decimal(30, 10)
+  totalTrades    Int
+  winningTrades  Int
+  losingTrades   Int
+  winRate        Decimal  @db.Decimal(10, 6)
+  netPnl         Decimal  @db.Decimal(30, 10)
+  maxDrawdown    Decimal  @db.Decimal(30, 10)
+  profitFactor   Decimal  @db.Decimal(30, 10)
+  averageWin     Decimal  @db.Decimal(30, 10)
+  averageLoss    Decimal  @db.Decimal(30, 10)
+  createdAt      DateTime @default(now())
+  strategy       Strategy @relation(fields: [strategyId], references: [id], onDelete: Restrict)
+
+  @@index([strategyId, createdAt])
+  @@index([symbol, timeframe, startDate, endDate])
+}
+
+model BotEvent {
+  id        String       @id @default(cuid())
+  type      BotEventType
+  message   String
+  symbol    String?
+  tradeId   String?
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  @@index([type, createdAt])
+  @@index([symbol, createdAt])
+}
+
+model BotSettings {
+  id                   String   @id @default(cuid())
+  symbol               String
+  timeframe            String
+  riskPerTrade         Decimal  @db.Decimal(10, 6)
+  maxOpenPositions     Int
+  strategy             String
+  paperTradingEnabled  Boolean  @default(true)
+  notificationsEnabled Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
