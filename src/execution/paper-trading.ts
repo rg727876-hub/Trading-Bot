@@ -3,7 +3,7 @@ import { Decimal } from 'decimal.js';
 import type { Candle } from '../market/candle.js';
 import { TradeStateMachine, type TradeState } from './trade-state-machine.js';
 
-export type PaperTradeExitReason = 'SIGNAL' | 'STOP_LOSS' | 'TAKE_PROFIT';
+export type PaperTradeExitReason = 'SIGNAL' | 'STOP_LOSS' | 'TAKE_PROFIT' | 'BACKTEST_END';
 
 export interface PaperTradingConfig {
   feeRate: Decimal.Value;
