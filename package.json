@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
+    "dashboard:build": "npm --prefix frontend run build",
+    "dashboard:dev": "npm --prefix frontend run dev",
+    "dashboard:test": "npm --prefix frontend run test",
     "start": "node dist/main.js",
     "test": "vitest run",
     "test:watch": "vitest",
